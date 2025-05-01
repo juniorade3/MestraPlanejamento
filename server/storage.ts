@@ -17,7 +17,7 @@ import pgConnect from "connect-pg-simple";
 import { pool } from "./db";
 
 const MemoryStore = createMemoryStore(session);
-const PgSessionStore = pgConnect(session);
+const PgStore = pgConnect(session);
 
 export interface IStorage {
   // User methods
@@ -42,10 +42,10 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  sessionStore: session.SessionStore;
+  sessionStore: any;
 
   constructor() {
-    this.sessionStore = new PostgresSessionStore({
+    this.sessionStore = new PgStore({
       pool,
       createTableIfMissing: true
     });
@@ -62,7 +62,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
+    const userToInsert = {
+      ...insertUser,
+      role: insertUser.role || 'teacher'
+    };
+    
+    const [user] = await db.insert(users).values(userToInsert).returning();
     return user;
   }
 
@@ -76,7 +81,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createLessonPlan(insertPlan: InsertLessonPlan): Promise<LessonPlan> {
-    const [plan] = await db.insert(lessonPlans).values(insertPlan).returning();
+    const planToInsert = {
+      ...insertPlan,
+      status: insertPlan.status || 'draft',
+      source: insertPlan.source || 'bncc'
+    };
+    
+    const [plan] = await db.insert(lessonPlans).values(planToInsert).returning();
     return plan;
   }
 
@@ -174,7 +185,7 @@ export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private lessonPlans: Map<number, LessonPlan>;
   private templates: Map<number, Template>;
-  sessionStore: session.SessionStore;
+  sessionStore: any;
   
   currentUserId: number;
   currentLessonPlanId: number;
@@ -208,7 +219,13 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user: User = { ...insertUser, id, createdAt: new Date() };
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      createdAt: new Date(),
+      role: insertUser.role || 'teacher', 
+      school: insertUser.school || null
+    };
     this.users.set(id, user);
     return user;
   }
@@ -230,7 +247,15 @@ export class MemStorage implements IStorage {
       ...insertPlan, 
       id, 
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      status: insertPlan.status || 'draft',
+      source: insertPlan.source || 'bncc',
+      resources: insertPlan.resources || [],
+      classType: insertPlan.classType || null,
+      specialNeeds: insertPlan.specialNeeds || null,
+      includeAssessment: insertPlan.includeAssessment || false,
+      includeHomework: insertPlan.includeHomework || false,
+      includeReferences: insertPlan.includeReferences || false
     };
     this.lessonPlans.set(id, plan);
     return plan;
@@ -334,4 +359,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Agora usaremos o DatabaseStorage para persistência em PostgreSQL
+export const storage = new DatabaseStorage();
