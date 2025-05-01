@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage, DatabaseStorage } from "./storage";
 import { setupAuth } from "./auth";
 import { 
   generateLessonPlan, 
@@ -204,6 +204,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Templates API
+  app.post("/api/init-templates", async (req, res) => {
+    try {
+      if (storage instanceof DatabaseStorage) {
+        await storage.initializeTemplates();
+        res.status(200).json({ message: "Templates initialized successfully" });
+      } else {
+        res.status(400).json({ message: "Not using database storage" });
+      }
+    } catch (error) {
+      console.error("Error initializing templates:", error);
+      res.status(500).json({ message: "Failed to initialize templates" });
+    }
+  });
+
   app.get("/api/templates", async (req, res) => {
     try {
       const templates = await storage.getAllTemplates();
