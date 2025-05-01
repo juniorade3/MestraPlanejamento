@@ -9,6 +9,13 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect } from "react";
 
+// Imagens
+import teacher1 from "../assets/images/teacher1.svg";
+import teacher2 from "../assets/images/teacher2.svg";
+import teacher3 from "../assets/images/teacher3.svg";
+import appScreenshot from "../assets/images/app-screenshot.svg";
+import wizardImage from "../assets/images/wizard.svg";
+
 const faqs = [
   {
     question: "Como a IA do aulaMestra entende a BNCC?",
