@@ -146,15 +146,15 @@ export default function LandingPage() {
               </div>
               <div className="mt-8 flex items-center space-x-2">
                 <div className="flex -space-x-2">
-                  <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-300"></div>
-                  <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-300"></div>
-                  <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-300"></div>
+                  <img src={teacher1} alt="Professor" className="w-8 h-8 rounded-full border-2 border-white" />
+                  <img src={teacher2} alt="Professor" className="w-8 h-8 rounded-full border-2 border-white" />
+                  <img src={teacher3} alt="Professor" className="w-8 h-8 rounded-full border-2 border-white" />
                 </div>
                 <p className="text-sm text-blue-100">Mais de 10.000 professores já estão usando</p>
               </div>
             </div>
             <div className="hidden md:block">
-              <div className="rounded-lg shadow-xl bg-gray-300 h-96 w-full"></div>
+              <img src={appScreenshot} alt="Dashboard do aulaMestra" className="rounded-lg shadow-xl w-full h-auto" />
             </div>
           </div>
         </div>
@@ -226,7 +226,7 @@ export default function LandingPage() {
             </div>
             
             <div className="hidden md:block">
-              <div className="rounded-lg shadow-xl bg-gray-300 h-96 w-full"></div>
+              <img src={wizardImage} alt="Assistente de criação de planos" className="rounded-lg shadow-xl w-full h-auto" />
             </div>
           </div>
         </div>
