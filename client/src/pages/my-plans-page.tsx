@@ -17,6 +17,7 @@ import {
   List, 
   Loader2, 
   AlertCircle,
+  FileText
 } from "lucide-react";
 import {
   Dialog,

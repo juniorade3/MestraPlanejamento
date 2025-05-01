@@ -5,7 +5,7 @@ import { setupAuth } from "./auth";
 import { 
   generateLessonPlan, 
   generateLessonPlanFromPdf 
-} from "./openai";
+} from "./deepseek";
 import multer from "multer";
 import { z } from "zod";
 import { insertLessonPlanSchema, insertTemplateSchema } from "@shared/schema";
