@@ -95,10 +95,10 @@ export function Sidebar({ activePage }: SidebarProps) {
       <nav className="mt-4 px-2">
         <div className="space-y-1">
           {menuItems.map((item) => (
-            <Link key={item.href} href={item.href}>
-              <a
+            <Link key={item.href} href={item.href} asChild>
+              <button
                 className={cn(
-                  "flex items-center px-4 py-2 text-sm font-medium rounded-md",
+                  "flex items-center px-4 py-2 text-sm font-medium rounded-md w-full text-left",
                   item.active
                     ? "text-primary bg-primary/5"
                     : "text-gray-600 hover:bg-gray-50 hover:text-primary"
@@ -106,7 +106,7 @@ export function Sidebar({ activePage }: SidebarProps) {
               >
                 {item.icon}
                 <span>{item.name}</span>
-              </a>
+              </button>
             </Link>
           ))}
         </div>
@@ -117,10 +117,10 @@ export function Sidebar({ activePage }: SidebarProps) {
           </h3>
           <div className="mt-2 space-y-1">
             {settingsItems.map((item) => (
-              <Link key={item.href} href={item.href}>
-                <a
+              <Link key={item.href} href={item.href} asChild>
+                <button
                   className={cn(
-                    "flex items-center px-4 py-2 text-sm font-medium rounded-md",
+                    "flex items-center px-4 py-2 text-sm font-medium rounded-md w-full text-left",
                     item.active
                       ? "text-primary bg-primary/5"
                       : "text-gray-600 hover:bg-gray-50 hover:text-primary"
@@ -128,7 +128,7 @@ export function Sidebar({ activePage }: SidebarProps) {
                 >
                   {item.icon}
                   <span>{item.name}</span>
-                </a>
+                </button>
               </Link>
             ))}
           </div>
