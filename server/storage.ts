@@ -9,10 +9,15 @@ import {
   Template,
   InsertTemplate
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import pgConnect from "connect-pg-simple";
+import { pool } from "./db";
 
 const MemoryStore = createMemoryStore(session);
+const PgSessionStore = pgConnect(session);
 
 export interface IStorage {
   // User methods
@@ -33,7 +38,136 @@ export interface IStorage {
   createTemplate(template: InsertTemplate): Promise<Template>;
 
   // Session store
+  sessionStore: any;
+}
+
+export class DatabaseStorage implements IStorage {
   sessionStore: session.SessionStore;
+
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true
+    });
+  }
+
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+
+  async getLessonPlan(id: number): Promise<LessonPlan | undefined> {
+    const [plan] = await db.select().from(lessonPlans).where(eq(lessonPlans.id, id));
+    return plan;
+  }
+
+  async getLessonPlansByUserId(userId: number): Promise<LessonPlan[]> {
+    return await db.select().from(lessonPlans).where(eq(lessonPlans.userId, userId));
+  }
+
+  async createLessonPlan(insertPlan: InsertLessonPlan): Promise<LessonPlan> {
+    const [plan] = await db.insert(lessonPlans).values(insertPlan).returning();
+    return plan;
+  }
+
+  async updateLessonPlan(id: number, insertPlan: InsertLessonPlan): Promise<LessonPlan> {
+    const [plan] = await db
+      .update(lessonPlans)
+      .set({ ...insertPlan, updatedAt: new Date() })
+      .where(eq(lessonPlans.id, id))
+      .returning();
+
+    if (!plan) {
+      throw new Error(`Lesson plan with id ${id} not found`);
+    }
+    
+    return plan;
+  }
+
+  async deleteLessonPlan(id: number): Promise<void> {
+    await db.delete(lessonPlans).where(eq(lessonPlans.id, id));
+  }
+
+  async getTemplate(id: number): Promise<Template | undefined> {
+    const [template] = await db.select().from(templates).where(eq(templates.id, id));
+    return template;
+  }
+
+  async getAllTemplates(): Promise<Template[]> {
+    return await db.select().from(templates);
+  }
+
+  async createTemplate(insertTemplate: InsertTemplate): Promise<Template> {
+    const [template] = await db.insert(templates).values(insertTemplate).returning();
+    return template;
+  }
+
+  async initializeTemplates() {
+    // Check if templates already exist
+    const existingTemplates = await this.getAllTemplates();
+    if (existingTemplates.length > 0) return;
+
+    // Sample templates based on the design
+    const templateData: InsertTemplate[] = [
+      {
+        title: "Aula Colaborativa: Ciências",
+        subject: "ciencias",
+        grade: "fundamental_6",
+        content: {
+          introduction: "Aula colaborativa focada em descobertas científicas através de experimentos em grupo.",
+          development: "Os alunos serão divididos em grupos para realizar experimentos simples e documentar suas observações.",
+          conclusion: "Cada grupo apresentará seus resultados e conclusões para a turma."
+        },
+        classType: "laboratorio",
+        topics: ["Método científico", "Trabalho em equipe", "Observação e registro"],
+        objectives: "Desenvolver habilidades de trabalho em equipe e aplicação do método científico.",
+        duration: 90
+      },
+      {
+        title: "Análise Literária",
+        subject: "portugues",
+        grade: "medio_1",
+        content: {
+          introduction: "Apresentação da obra literária e seu contexto histórico.",
+          development: "Análise dos elementos narrativos, personagens e temas principais.",
+          conclusion: "Discussão sobre a relevância da obra na contemporaneidade."
+        },
+        classType: "debate",
+        topics: ["Análise textual", "Contexto histórico", "Interpretação"],
+        objectives: "Desenvolver habilidades de análise crítica e interpretação de textos literários.",
+        duration: 100
+      },
+      {
+        title: "Atividades Lúdicas",
+        subject: "educacao_fisica",
+        grade: "infantil_4",
+        content: {
+          introduction: "Acolhimento com música e movimentos corporais.",
+          development: "Circuito de atividades lúdicas para desenvolvimento motor.",
+          conclusion: "Relaxamento e feedback das atividades realizadas."
+        },
+        classType: "pratica",
+        topics: ["Desenvolvimento motor", "Coordenação", "Socialização"],
+        objectives: "Estimular o desenvolvimento motor e a socialização através de brincadeiras educativas.",
+        duration: 45
+      }
+    ];
+
+    // Insert templates one by one to maintain simplicity
+    for (const template of templateData) {
+      await this.createTemplate(template);
+    }
+  }
 }
 
 export class MemStorage implements IStorage {
